@@ -14,6 +14,7 @@ router.get("/test",authController.isAuthenticated,authController.test)
 //test for only admin and super admin
 router.get("/testAdmin",authController.isAuthenticated,authController.isAdmin,authController.testAdmin);
 
-
+//user update
+router.patch("/userUpdate",authController.isAuthenticated,authController.userUpdate)
 
 module.exports = router;

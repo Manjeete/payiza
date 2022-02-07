@@ -124,8 +124,8 @@ exports.login = async (req,res,next) =>{
             })
         }
         // 2) Check is user exists and password is correct
-        const user = await User.findOne({username:username,password:password});
-        if(!user){
+        const user = await User.findOne({username}).select('+password')
+        if(!user || !(await user.correctPassword(password,user.password))){
             return res.status(400).json({
                 status:false,
                 msg:"username or password did not match"
@@ -165,7 +165,6 @@ exports.isAuthenticated = async (req,res,next) =>{
     // 2) Token verification 
     const decoded = await promisify(jwt.verify)(token,process.env.JWT_SECRET);
 
-    console.log(decoded)
     // 3) Check if user still exists
     const currentUser = await User.findById(decoded._id);
     if(!currentUser){
@@ -210,4 +209,25 @@ exports.testAdmin  = (req,res) =>{
         status:true,
         msg:"Route only for admin or superAdmin"
     })
+}
+
+
+//user update
+exports.userUpdate = async(req,res) =>{
+    try{
+        const user = req.user
+        const {name,phone} = req.body
+        let userUpdate = await User.findByIdAndUpdate({_id:user._id},{name:name,phone:phone},{new:true})
+
+        res.status(200).json({
+            status:true,
+            user:userUpdate
+        })
+
+    }catch(err){
+        return res.status(500).json({
+            status:false,
+            msg:err.message
+        })
+    }
 }
